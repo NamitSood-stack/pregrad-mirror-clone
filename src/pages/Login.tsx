@@ -50,7 +50,10 @@ const Login = () => {
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">
                       Don't have an account?{" "}
-                      <button className="text-primary hover:underline">
+                      <button 
+                        onClick={() => window.location.href = '/signup'}
+                        className="text-primary hover:underline"
+                      >
                         Sign up
                       </button>
                     </p>

@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import DataScience from "./pages/DataScience";
 import HireTalent from "./pages/HireTalent";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Mentor from "./pages/Mentor";
 import Resources from "./pages/Resources";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/courses/data-science-and-analytics" element={<DataScience />} />
           <Route path="/hire-talent" element={<HireTalent />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/mentor" element={<Mentor />} />
           <Route path="/resources" element={<Resources />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
