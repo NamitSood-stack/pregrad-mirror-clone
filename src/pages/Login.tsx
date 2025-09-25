@@ -21,7 +21,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const { signIn, user } = useAuth();
+  const auth = useAuth();
+  const { signIn, user } = auth;
   const navigate = useNavigate();
   const { toast } = useToast();
 
