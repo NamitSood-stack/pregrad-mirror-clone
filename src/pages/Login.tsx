@@ -1,11 +1,74 @@
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const { signIn, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
+
+    try {
+      const validatedData = loginSchema.parse({ email, password });
+      
+      const { error } = await signIn(validatedData.email, validatedData.password);
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: { [key: string]: string } = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            newErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -19,15 +82,33 @@ const Login = () => {
                   <p className="text-muted-foreground">Sign in to your Pregrad account</p>
                 </div>
 
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Email</label>
-                    <Input type="email" placeholder="your@email.com" />
+                    <Input 
+                      type="email" 
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={errors.email ? "border-destructive" : ""}
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Password</label>
-                    <Input type="password" placeholder="••••••••" />
+                    <Input 
+                      type="password" 
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={errors.password ? "border-destructive" : ""}
+                    />
+                    {errors.password && (
+                      <p className="text-sm text-destructive">{errors.password}</p>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -35,13 +116,17 @@ const Login = () => {
                       <input type="checkbox" className="rounded border-pregrad-border" />
                       <span className="text-muted-foreground">Remember me</span>
                     </label>
-                    <button className="text-sm text-primary hover:underline">
+                    <button type="button" className="text-sm text-primary hover:underline">
                       Forgot password?
                     </button>
                   </div>
 
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                    Sign In
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    disabled={loading}
+                  >
+                    {loading ? "Signing In..." : "Sign In"}
                   </Button>
                 </form>
 
@@ -50,12 +135,12 @@ const Login = () => {
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">
                       Don't have an account?{" "}
-                      <button 
-                        onClick={() => window.location.href = '/signup'}
+                      <Link 
+                        to="/signup"
                         className="text-primary hover:underline"
                       >
                         Sign up
-                      </button>
+                      </Link>
                     </p>
                   </div>
                 </div>

@@ -1,3 +1,7 @@
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,8 +11,97 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Users, Award, BookOpen } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+const signupSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
+  education: z.string().min(1, "Please select your education level"),
+  domain: z.string().min(1, "Please select your area of interest"),
+  source: z.string().min(1, "Please select how you heard about us"),
+  termsAccepted: z.boolean().refine(val => val === true, "You must accept the terms and conditions"),
+});
 
 const Signup = () => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    education: "",
+    domain: "",
+    source: "",
+    termsAccepted: false,
+    marketingOptIn: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const { signUp, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
+
+    try {
+      const validatedData = signupSchema.parse(formData);
+      
+      const { error } = await signUp(
+        validatedData.email,
+        validatedData.password,
+        validatedData.firstName,
+        validatedData.lastName
+      );
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Signup failed",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Account created successfully!",
+          description: "Please check your email to verify your account.",
+        });
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: { [key: string]: string } = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            newErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -98,37 +191,83 @@ const Signup = () => {
                       <p className="text-muted-foreground">Join thousands of successful students</p>
                     </div>
 
-                    <form className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-foreground">First Name</label>
-                          <Input placeholder="John" />
+                          <Input 
+                            placeholder="John"
+                            value={formData.firstName}
+                            onChange={(e) => handleInputChange('firstName', e.target.value)}
+                            className={errors.firstName ? "border-destructive" : ""}
+                          />
+                          {errors.firstName && (
+                            <p className="text-sm text-destructive">{errors.firstName}</p>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-foreground">Last Name</label>
-                          <Input placeholder="Doe" />
+                          <Input 
+                            placeholder="Doe"
+                            value={formData.lastName}
+                            onChange={(e) => handleInputChange('lastName', e.target.value)}
+                            className={errors.lastName ? "border-destructive" : ""}
+                          />
+                          {errors.lastName && (
+                            <p className="text-sm text-destructive">{errors.lastName}</p>
+                          )}
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">Email</label>
-                        <Input type="email" placeholder="john@example.com" />
+                        <Input 
+                          type="email" 
+                          placeholder="john@example.com"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          className={errors.email ? "border-destructive" : ""}
+                        />
+                        {errors.email && (
+                          <p className="text-sm text-destructive">{errors.email}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">Phone Number</label>
-                        <Input type="tel" placeholder="+1 (555) 123-4567" />
+                        <Input 
+                          type="tel" 
+                          placeholder="+1 (555) 123-4567"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className={errors.phone ? "border-destructive" : ""}
+                        />
+                        {errors.phone && (
+                          <p className="text-sm text-destructive">{errors.phone}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">Password</label>
-                        <Input type="password" placeholder="••••••••" />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange('password', e.target.value)}
+                          className={errors.password ? "border-destructive" : ""}
+                        />
+                        {errors.password && (
+                          <p className="text-sm text-destructive">{errors.password}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Password must be at least 8 characters with uppercase, lowercase, and number
+                        </p>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">Educational Background</label>
-                        <Select>
-                          <SelectTrigger>
+                        <Select value={formData.education} onValueChange={(value) => handleInputChange('education', value)}>
+                          <SelectTrigger className={errors.education ? "border-destructive" : ""}>
                             <SelectValue placeholder="Select your education level" />
                           </SelectTrigger>
                           <SelectContent>
@@ -138,12 +277,15 @@ const Signup = () => {
                             <SelectItem value="working-professional">Working Professional</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.education && (
+                          <p className="text-sm text-destructive">{errors.education}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">Interested Domain</label>
-                        <Select>
-                          <SelectTrigger>
+                        <Select value={formData.domain} onValueChange={(value) => handleInputChange('domain', value)}>
+                          <SelectTrigger className={errors.domain ? "border-destructive" : ""}>
                             <SelectValue placeholder="Choose your area of interest" />
                           </SelectTrigger>
                           <SelectContent>
@@ -155,12 +297,15 @@ const Signup = () => {
                             <SelectItem value="consulting">Management Consulting</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.domain && (
+                          <p className="text-sm text-destructive">{errors.domain}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">How did you hear about us?</label>
-                        <Select>
-                          <SelectTrigger>
+                        <Select value={formData.source} onValueChange={(value) => handleInputChange('source', value)}>
+                          <SelectTrigger className={errors.source ? "border-destructive" : ""}>
                             <SelectValue placeholder="Select source" />
                           </SelectTrigger>
                           <SelectContent>
@@ -171,27 +316,47 @@ const Signup = () => {
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.source && (
+                          <p className="text-sm text-destructive">{errors.source}</p>
+                        )}
                       </div>
 
                       <div className="flex items-start space-x-3">
-                        <input type="checkbox" className="mt-1 rounded border-pregrad-border" />
+                        <input 
+                          type="checkbox" 
+                          className="mt-1 rounded border-pregrad-border"
+                          checked={formData.termsAccepted}
+                          onChange={(e) => handleInputChange('termsAccepted', e.target.checked)}
+                        />
                         <div className="text-sm text-muted-foreground">
                           I agree to the{" "}
-                          <button className="text-primary hover:underline">Terms of Service</button>
+                          <button type="button" className="text-primary hover:underline">Terms of Service</button>
                           {" "}and{" "}
-                          <button className="text-primary hover:underline">Privacy Policy</button>
+                          <button type="button" className="text-primary hover:underline">Privacy Policy</button>
                         </div>
                       </div>
+                      {errors.termsAccepted && (
+                        <p className="text-sm text-destructive">{errors.termsAccepted}</p>
+                      )}
 
                       <div className="flex items-start space-x-3">
-                        <input type="checkbox" className="mt-1 rounded border-pregrad-border" />
+                        <input 
+                          type="checkbox" 
+                          className="mt-1 rounded border-pregrad-border"
+                          checked={formData.marketingOptIn}
+                          onChange={(e) => handleInputChange('marketingOptIn', e.target.checked)}
+                        />
                         <div className="text-sm text-muted-foreground">
                           I would like to receive updates about courses and career opportunities
                         </div>
                       </div>
 
-                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Create Account
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                        disabled={loading}
+                      >
+                        {loading ? "Creating Account..." : "Create Account"}
                       </Button>
                     </form>
 
@@ -200,12 +365,12 @@ const Signup = () => {
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">
                           Already have an account?{" "}
-                          <button 
-                            onClick={() => window.location.href = '/login'}
+                          <Link 
+                            to="/login"
                             className="text-primary hover:underline"
                           >
                             Sign in
-                          </button>
+                          </Link>
                         </p>
                       </div>
                     </div>
