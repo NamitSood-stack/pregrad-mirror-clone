@@ -2,10 +2,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, Users, Award } from "lucide-react";
 
 const DataScience = () => {
+  const navigate = useNavigate();
   const features = [
     "Hands-on projects with real datasets",
     "Industry-standard tools and technologies",
@@ -154,7 +156,11 @@ const DataScience = () => {
               <p className="text-muted-foreground">
                 Join thousands of students who have successfully launched their careers in data science with our comprehensive program.
               </p>
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg">
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg"
+                onClick={() => navigate('/signup')}
+              >
                 Apply Now
               </Button>
             </div>

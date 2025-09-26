@@ -1,11 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import student1 from "@/assets/student-1.jpg";
 import student2 from "@/assets/student-2.jpg";
 import student3 from "@/assets/student-3.jpg";
 
 const TestimonialsSection = () => {
+  const navigate = useNavigate();
   const testimonials = [
     {
       name: "Arpita Vishwakarma",
@@ -116,6 +118,7 @@ const TestimonialsSection = () => {
           <Button 
             size="lg" 
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold"
+            onClick={() => navigate('/signup')}
           >
             Apply Now
           </Button>

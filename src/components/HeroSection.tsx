@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import student1 from "@/assets/student-1.jpg";
 import student2 from "@/assets/student-2.jpg";
 import student3 from "@/assets/student-3.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  
   const studentsData = [
     { id: 1, image: student1, color: "bg-blue-500" },
     { id: 2, image: student2, color: "bg-red-500" },
@@ -37,6 +40,7 @@ const HeroSection = () => {
           <Button 
             size="lg" 
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold rounded-lg shadow-glow"
+            onClick={() => navigate('/signup')}
           >
             Apply Now
           </Button>
@@ -59,9 +63,7 @@ const HeroSection = () => {
             {studentsData.map((student, index) => (
               <Card 
                 key={student.id}
-                className={`relative overflow-hidden bg-gradient-card border-pregrad-border hover:shadow-card transition-all duration-300 transform hover:scale-105 ${
-                  index % 2 === 0 ? 'animate-float' : ''
-                }`}
+                className="relative overflow-hidden bg-gradient-card border-pregrad-border hover:shadow-card transition-all duration-300 transform hover:scale-105"
                 style={{
                   animationDelay: `${index * 0.2}s`
                 }}
@@ -87,8 +89,8 @@ const HeroSection = () => {
       </div>
 
       {/* Background decorative elements */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full blur-xl animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
+      <div className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full blur-xl"></div>
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
     </section>
   );
 };

@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const ProgramsSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-16 bg-pregrad-surface">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -18,6 +20,7 @@ const ProgramsSection = () => {
           <Button 
             size="lg" 
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold"
+            onClick={() => navigate('/signup')}
           >
             Apply Now
           </Button>

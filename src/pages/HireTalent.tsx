@@ -5,9 +5,58 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { Users, Award, Briefcase, TrendingUp } from "lucide-react";
 
 const HireTalent = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    companyName: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    requiredSkills: '',
+    jobRequirements: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.companyName || !formData.contactPerson || !formData.email) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulate form submission
+    toast({
+      title: "Request Submitted!",
+      description: "We'll get back to you within 24 hours with suitable talent profiles.",
+    });
+
+    // Reset form
+    setFormData({
+      companyName: '',
+      contactPerson: '',
+      email: '',
+      phone: '',
+      requiredSkills: '',
+      jobRequirements: ''
+    });
+  };
   const stats = [
     { icon: Users, label: "Pre-trained Talent", value: "24k+" },
     { icon: Award, label: "Industry Certified", value: "300+" },
@@ -101,43 +150,75 @@ const HireTalent = () => {
               </div>
 
               <Card className="p-8 bg-gradient-card border-pregrad-border">
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Company Name</label>
-                      <Input placeholder="Your company name" />
+                      <label className="text-sm font-medium text-foreground">Company Name *</label>
+                      <Input 
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleInputChange}
+                        placeholder="Your company name" 
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Contact Person</label>
-                      <Input placeholder="Your name" />
+                      <label className="text-sm font-medium text-foreground">Contact Person *</label>
+                      <Input 
+                        name="contactPerson"
+                        value={formData.contactPerson}
+                        onChange={handleInputChange}
+                        placeholder="Your name" 
+                        required
+                      />
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Email</label>
-                      <Input type="email" placeholder="your@email.com" />
+                      <label className="text-sm font-medium text-foreground">Email *</label>
+                      <Input 
+                        type="email" 
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="your@email.com" 
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">Phone</label>
-                      <Input placeholder="+91 9999999999" />
+                      <Input 
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="+91 9999999999" 
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Required Skills</label>
-                    <Input placeholder="e.g., Data Science, React, Python" />
+                    <Input 
+                      name="requiredSkills"
+                      value={formData.requiredSkills}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Data Science, React, Python" 
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Job Requirements</label>
                     <Textarea 
+                      name="jobRequirements"
+                      value={formData.jobRequirements}
+                      onChange={handleInputChange}
                       placeholder="Describe your requirements, number of positions, experience level, etc."
                       rows={4}
                     />
                   </div>
 
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                     Submit Requirements
                   </Button>
                 </form>
